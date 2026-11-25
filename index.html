@@ -471,6 +471,7 @@
         </div>
         <div class="header-actions">
             <button class="icon-btn" onclick="toggleSound()" id="soundBtn" title="الصوت">🔊</button>
+            <button class="icon-btn" onclick="toggleVibrate()" id="vibrateBtn" title="الاهتزاز">📳</button>
             <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="المظهر">☀️</button>
             <button class="icon-btn" onclick="openIndexModal()" title="الفهرس والبحث">📑</button>
         </div>
@@ -487,7 +488,7 @@
     </div>
 
     <main>
-        <div class="dhikr-card" onclick="nextDhikr()">
+        <div class="dhikr-card">
             <div class="card-header">
                 <span class="badge-num" id="dhikrNumber">#1</span>
                 <span class="badge-time" id="dhikrTime">00:00:18</span>
@@ -511,9 +512,9 @@
                 <button class="nav-btn" id="prevBtn" onclick="prevDhikr()">➡️ السابق</button>
 
                 <div class="tasbeeh-btn-outer">
-                    <button class="tasbeeh-btn" onclick="nextDhikr()" id="mainCounterBtn">
+                    <button class="tasbeeh-btn" id="mainCounterBtn" tabindex="-1">
                         <span class="count-display" id="counterDisplay">1</span>
-                        <span class="tap-label">اضغط للاستغفار</span>
+                        <span class="tap-label">الصيغة الحالية</span>
                     </button>
                 </div>
 
@@ -685,6 +686,7 @@
         let fontSize = parseFloat(localStorage.getItem('istighfar_font')) || 1.65;
         let soundEnabled = localStorage.getItem('istighfar_sound') !== 'false';
         let isLight = localStorage.getItem('istighfar_theme') === 'light';
+        let vibrateEnabled = localStorage.getItem('istighfar_vibrate') !== 'false';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClickSound() {
@@ -733,7 +735,7 @@
 
         function nextDhikr() {
             playClickSound();
-            if (navigator.vibrate) navigator.vibrate(25);
+            vibrateTick();
             if (currentIndex < TOTAL - 1) {
                 currentIndex++;
                 updateUI();
@@ -742,7 +744,20 @@
             }
         }
 
+        function vibrateTick() {
+            if (vibrateEnabled && navigator.vibrate) navigator.vibrate(25);
+        }
+
+        function toggleVibrate() {
+            vibrateEnabled = !vibrateEnabled;
+            localStorage.setItem('istighfar_vibrate', vibrateEnabled);
+            document.getElementById('vibrateBtn').textContent = vibrateEnabled ? '📳' : '🔕';
+            showToast(vibrateEnabled ? 'الاهتزاز مفعّل' : 'الاهتزاز متوقف');
+        }
+
         function prevDhikr() {
+            playClickSound();
+            vibrateTick();
             if (currentIndex > 0) {
                 currentIndex--;
                 updateUI();
@@ -828,6 +843,7 @@
         if (isLight) document.body.classList.add('light-theme');
         document.getElementById('themeBtn').textContent = isLight ? '🌙' : '☀️';
         document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        document.getElementById('vibrateBtn').textContent = vibrateEnabled ? '📳' : '🔕';
         updateUI();
     </script>
     <script>
